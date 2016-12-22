@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Плитка</title>
+
+    <script src="https://code.jquery.com/jquery-1.11.3.js"></script>
+
+    <script language="javascript">
+        var collections = {
+            'bosco_1.png': 'bosco',
+            'bosco_2.png': 'bosco',
+            'bosco_3.png': 'bosco',
+            'bosco_4.png': 'bosco',
+            'bosco_5.png': 'bosco',
+            'coloegia_1.png': 'coloegia',
+            'coloegia_2.png': 'coloegia',
+            'coloegia_3.png': 'coloegia',
+            'coloegia_4.png': 'coloegia',
+            'coloegia_5.png': 'coloegia',
+            'cobalto_1.png': 'cobalto',
+            'cobalto_2.png': 'cobalto',
+            'cobalto_3.png': 'cobalto',
+            'cobalto_4.png': 'cobalto',
+            'cobalto_5.png': 'cobalto',
+            'peltro_1.png': 'peltro',
+            'peltro_2.png': 'peltro',
+            'peltro_3.png': 'peltro',
+            'peltro_4.png': 'peltro',
+            'peltro_5.png': 'peltro',
+            'tortora_1.png': 'tortora',
+            'tortora_2.png': 'tortora',
+            'tortora_3.png': 'tortora',
+            'tortora_4.png': 'tortora',
+            'tortora_5.png': 'tortora',
+            'nero_1.png': 'nero',
+            'nero_2.png': 'nero',
+            'nero_3.png': 'nero',
+            'nero_4.png': 'nero',
+            'nero_5.png': 'nero',
+            'gesso.png': 'gesso'
+        };
+
+        (function ($) {
+            $.extend({
+                getQueryString: function (name) {
+                    function parseParams() {
+                        var params = {},
+                                e,
+                                a = /\+/g,  // Regex for replacing addition symbol with a space
+                                r = /([^&=]+)=?([^&]*)/g,
+                                d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
+                                q = window.location.search.substring(1);
+
+                        while (e = r.exec(q))
+                            params[d(e[1])] = d(e[2]);
+
+                        return params;
+                    }
+
+                    if (!this.queryStringParams)
+                        this.queryStringParams = parseParams();
+
+                    return this.queryStringParams[name];
+                }
+            });
+        })(jQuery);
+
+        $( document ).ready(function() {
+            // bosco,coloegia,cobalto,peltro,tortora,nero,gesso
+
+            var seamWidth = $.getQueryString('seam-width') || 2;
+            var seamColor = $.getQueryString('seam-color') || 'white';
+            var tileWidth = $.getQueryString('tile-width') || 100;
+            var tileHeight = $.getQueryString('tile-height') || 100;
+            var allowCollections = ($.getQueryString('collections') || 'bosco,coloegia,cobalto,peltro,tortora,nero').split(',');
+            var background = $.getQueryString('background') || 'https://odesign.ru/wp-content/uploads/4225-r1.jpg';
+            var zoom = $.getQueryString('zoom') || 100;
+
+            var filters = ($.getQueryString('filters') || '1,2').split(',');
+            var filterCollection = jQuery.inArray('1', filters) > -1;
+            var filterType = jQuery.inArray('2', filters) > -1;
+
+            $('.pano:eq(0)')
+                    .width($.getQueryString('pano-1-width') || 4004)
+                    .height($.getQueryString('pano-1-width') || 600);
+
+            $('.pano:eq(1)')
+                    .width($.getQueryString('pano-2-width') || 1200)
+                    .height($.getQueryString('pano-2-width') || 600);
+
+            $('body').css('backgroundImage', 'url(' + background + ')').css('zoom', zoom + '%');
+
+            var tiles = [];
+            for (var c in collections) {
+                if (jQuery.inArray(collections[c], allowCollections) < 0) {
+                    continue;
+                }
+
+                for (var i = 0; i < collections[c].length; i ++) {
+                    tiles[tiles.length] = {
+                        file: c,
+                        collection: collections[c],
+                        type: c.replace(/[^\d]+/g, '')
+                    };
+                }
+            }
+
+            $('.pano').each(function(){
+                var pano = $(this);
+                var cols = Math.ceil(pano.width() / tileWidth);
+                var rows = Math.ceil(pano.height() / tileHeight);
+                var stats = {};
+                var matrix = [];
+
+                for (var c in tiles) {
+                    stats[tiles[c].collection] = 0;
+                }
+
+                for (var r = 1; r <= rows; r++) {
+                    matrix[r] = [];
+
+                    var row = $('<div class="row">')
+                        .width(cols * tileWidth + cols * seamWidth)
+                        .height(tileHeight);
+
+                    if (r < rows) {
+                        row.css('border-bottom', seamWidth + 'px solid ' + seamColor)
+                    }
+
+                    for (var c = 1; c <= cols; c++) {
+                        var tile;
+
+                        if (filterCollection || filterType) {
+                            while (true) {
+                                tile = tiles[Math.floor(Math.random() * tiles.length)];
+
+                                // [x] <- [=]
+                                if (c > 1 && ((filterCollection && matrix[r][c - 1].collection == tile.collection) || (filterType && matrix[r][c - 1].type == tile.type))) {
+                                    continue;
+                                }
+
+                                if (r > 1) {
+                                    // [x]
+                                    //  ^
+                                    // [=]
+                                    if ((filterCollection && matrix[r - 1][c].collection == tile.collection) || (filterType && matrix[r - 1][c].type == tile.type) ) {
+                                        continue;
+                                    }
+
+                                    // [x] [x]
+                                    //    /
+                                    // [=]
+                                    if (c < cols && ((filterCollection && matrix[r - 1][c + 1].collection == tile.collection) || (filterType && matrix[r - 1][c + 1].type == tile.type))) {
+                                        continue;
+                                    }
+
+                                    // [x] [x]
+                                    //   \
+                                    //     [=]
+                                    if (c > 1 && ((filterCollection && matrix[r-1][c-1].collection == tile.collection) || (filterType && matrix[r-1][c-1].type == tile.type))) {
+                                        continue;
+                                    }
+                                }
+
+                                break;
+                            }
+                        } else {
+                            tile = tiles[Math.floor(Math.random() * tiles.length)];
+                        }
+
+                        stats[tile.collection]++;
+                        matrix[r][c] = tile;
+
+                        var col = $('<div class="tile">')
+                            .css('background-image', 'url(' + tile.file + ')')
+                            .width(tileWidth)
+                            .height(tileHeight)
+                            .attr('alt', tile.collection);
+
+                        if (c < cols) {
+                            col.css('border-right', seamWidth + 'px solid ' + seamColor)
+                        }
+
+                        row.append(col)
+                    }
+
+                    pano.append(row);
+                }
+
+                var text = '<strong>Всего плиток:</strong> ' + (cols * rows) + '<br />Рядов: ' + cols;
+
+                for (var c in stats) {
+                    text += '<br /><strong>' + c + ':</strong> ' + stats[c];
+                }
+
+                $('<div class="result">')
+                        .html(text)
+                        .insertAfter(pano);
+
+
+            });
+        });
+    </script>
+    <style>
+        body, html {
+            height: 100%;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .pano {
+            margin: 100px 0 0px 0;
+            overflow: hidden;
+            background: black;
+        }
+
+        .result {
+            margin: 20px 0 0px 0;
+        }
+
+        .tile {
+            background-size: 100% 100%;
+            float: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="pano"></div>
+    <div class="pano"></div>
+</body>
+</html>

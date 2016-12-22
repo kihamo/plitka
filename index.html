@@ -83,11 +83,11 @@
 
             $('.pano:eq(0)')
                     .width($.getQueryString('pano-1-width') || 4004)
-                    .height($.getQueryString('pano-1-width') || 600);
+                    .height($.getQueryString('pano-1-height') || 600 + 5 * seamWidth);
 
             $('.pano:eq(1)')
                     .width($.getQueryString('pano-2-width') || 1200)
-                    .height($.getQueryString('pano-2-width') || 600);
+                    .height($.getQueryString('pano-2-height') || 600 + 5 * seamWidth);
 
             $('body').css('backgroundImage', 'url(' + background + ')').css('zoom', zoom + '%');
 

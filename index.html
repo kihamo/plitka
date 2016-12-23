@@ -69,11 +69,11 @@
         $( document ).ready(function() {
             // bosco,coloegia,cobalto,peltro,tortora,nero,gesso
 
-            var seamWidth = $.getQueryString('seam-width') || 2;
+            var seamWidth = $.getQueryString('seam-width') || 1;
             var seamColor = $.getQueryString('seam-color') || 'white';
             var tileWidth = $.getQueryString('tile-width') || 100;
             var tileHeight = $.getQueryString('tile-height') || 100;
-            var allowCollections = ($.getQueryString('collections') || 'coloegia,cobalto,peltro,nero').split(',');
+            var allowCollections = ($.getQueryString('collections') || 'coloegia,cobalto,peltro,bosco').split(',');
             var background = $.getQueryString('background') || 'https://odesign.ru/wp-content/uploads/4225-r1.jpg';
             var zoom = $.getQueryString('zoom') || 100;
 

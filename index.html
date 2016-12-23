@@ -132,8 +132,16 @@
                         var tile;
 
                         if (filterCollection || filterType) {
+                            var t = 1;
+
                             while (true) {
+                                t++;
+
                                 tile = tiles[Math.floor(Math.random() * tiles.length)];
+
+                                if (t >= tiles.length) {
+                                    break;
+                                }
 
                                 // [x] <- [=]
                                 if (c > 1 && ((filterCollection && matrix[r][c - 1].collection == tile.collection) || (filterType && matrix[r][c - 1].type == tile.type))) {
